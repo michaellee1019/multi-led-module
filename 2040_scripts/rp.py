@@ -17,12 +17,14 @@ from adafruit_led_animation.animation.rainbowchase import RainbowChase
 from adafruit_led_animation.animation.rainbowsparkle import RainbowSparkle
 from adafruit_led_animation.animation.customcolorchase import CustomColorChase
 import time
-
 import busio
+import json
 
 
 from adafruit_led_animation.helper import PixelMap
 from adafruit_neopxl8 import NeoPxl8
+
+default_num_bytes = 1000
 
 uart = busio.UART(board.TX, board.RX, baudrate=9600)
 
@@ -241,34 +243,50 @@ pixel_display.set_animation(2, {"speed": .2, "tail_length": 30, "animation": "ra
 
 
 
+
+
 while True:
-    print("shuold be blinking")
-    pixel_display.set_animation(2, {"speed": .02, "tail_length": 30, "animation": "rainbow_comet"})
-    count = 0
+    # print("shuold be blinking")
+    # pixel_display.set_animation(2, {"speed": .02, "tail_length": 30, "animation": "rainbow_comet"})
+    # count = 0
 
-    while count < 5000:
-        pixel_display.animate()
-        count += 1
-    pixel_display.set_animation(2, {"speed": .1, "animation": "blink"})
+    # while count < 5000:
+    #     pixel_display.animate()
+    #     count += 1
+    # pixel_display.set_animation(2, {"speed": .1, "animation": "blink"})
 
-    print("changing animation")
-    count = 0
-    while count < 5000:
-        pixel_display.animate() 
-        count +=1
+    # print("changing animation")
+    # count = 0
+    # while count < 5000:
+    #     pixel_display.animate() 
+    #     count +=1
 
-    print("changing animation 2") 
-    pixel_display.set_animation(2, {"speed": .1, "animation": "comet"})
+    # print("changing animation 2") 
+    # pixel_display.set_animation(2, {"speed": .1, "animation": "comet"})
 
-    count = 0
-    while count < 5000:
-        pixel_display.animate() 
-        count +=1
+    # count = 0
+    # while count < 5000:
+    #     pixel_display.animate() 
+    #     count +=1
     
+    
+    pixels2 = {}
+    for i in range(strand_length):
+        pixels2[i] = (255, 70, 0)
     print("changing animation 2, should just be solid pixels now") 
-    pixel_display.set_animation(2, {"set_pixel_colors": {1: [0, 255, 0], 2: [0, 255, 0], 3: [0, 255, 0]}})
+    pixel_display.set_animation(2, {"set_pixel_colors": pixels2})
+    pixels1 = {}
+    for i in range(strand_length):
+        pixels1[i] = (255, 0, 120)
+    pixel_display.set_animation(1, {"set_pixel_colors": pixels1})
+    pixels0 = {}
+    for i in range(strand_length):
+        pixels0[i] = (150, 0, 255)
+    pixel_display.set_animation(0, {"set_pixel_colors": pixels0})
+
+
     count = 0
     while count < 5000:
-        pixel_display.animate() 
+        # pixel_display.animate() 
         count +=1
         

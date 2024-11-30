@@ -1,0 +1,12 @@
+{
+  "module_name": "multi-led",
+  "namespace": "vijayvuyyuru",
+  "language": "python",
+  "resource_type": "component",
+  "resource_subtype": "generic",
+  "model_name": "multi-led",
+  "enable_cloud_build": true,
+  "initialize_git": false,
+  "generator_version": "0.1.0",
+  "generated_on": "2024-11-22T20:25:04.337495Z"
+}
