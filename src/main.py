@@ -76,10 +76,13 @@ class MultiLed(Generic, EasyResource):
             "brightness": brightness
         }
         
+        json_data = json.dumps(pixel_config)
+        
         # buffer = io.StringIO()
         # json.dump(pixel_config, buffer)
         # buffer.seek(0)
-        # self.ser.write(buffer)
+        self.ser.write(json_data.encode('utf-8'))
+        # self.ser.write(pixel_config)
         
     async def do_command(
             self, command: Mapping[str, ValueTypes], *, timeout: Optional[float] = None,**kwargs,
