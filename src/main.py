@@ -65,7 +65,7 @@ class MultiLed(Generic, EasyResource):
         num_strands: int = int(config.attributes.fields["num_strands"].number_value)
         strand_length: str = config.attributes.fields["strand_length"].string_value
         brightness: float = config.attributes.fields["brightness"].number_value
-        ser = serial.Serial(port="/dev/serial0", baudrate=9600, timeout=2)
+        ser = serial.Serial(port="/dev/serial0", baudrate=9600)
         if not ser.is_open:
             ser.open()  # check and open Serial0
         ser.flush()  # clear the UART Input buffer
@@ -76,10 +76,10 @@ class MultiLed(Generic, EasyResource):
             "brightness": brightness
         }
         
-        buffer = io.StringIO()
-        json.dump(pixel_config, buffer)
-        buffer.seek(0)
-        self.ser.write(buffer)
+        # buffer = io.StringIO()
+        # json.dump(pixel_config, buffer)
+        # buffer.seek(0)
+        # self.ser.write(buffer)
         
     async def do_command(
             self, command: Mapping[str, ValueTypes], *, timeout: Optional[float] = None,**kwargs,
