@@ -9,7 +9,7 @@ iso8601==2.1.0
 multidict==6.1.0
 protobuf==5.28.2
 pymongo==4.10.1
+pyserial==3.5
 PyYAML==6.0.2
-serial==0.0.97
 typing_extensions==4.12.2
 viam-sdk==0.34.0
