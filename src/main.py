@@ -81,7 +81,8 @@ class MultiLed(Generic, EasyResource):
         # buffer = io.StringIO()
         # json.dump(pixel_config, buffer)
         # buffer.seek(0)
-        self.ser.write(json_data.encode('utf-8'))
+        bytes = self.ser.write(json_data.encode('utf-8'))
+        LOG.info(f"wrote {bytes} bytes of data to /dev/serial0")
         # self.ser.write(pixel_config)
         
     async def do_command(
