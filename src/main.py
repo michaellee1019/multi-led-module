@@ -69,7 +69,7 @@ class MultiLed(Generic, EasyResource):
             raise Exception("A brightness attribute is required for multi led component component. Must be a float like 0.2 for 20% brightness")
 
         if "address" not in config.attributes.fields:
-            raise Exception("A address attribute is required for multi led component.")
+            raise Exception("A address attribute is required for multi led component. It should be of format 0xADDRESS")
         return []
 
     def reconfigure(
@@ -84,7 +84,11 @@ class MultiLed(Generic, EasyResource):
         num_strands: int = int(config.attributes.fields["num_strands"].number_value)
         strand_length: str = config.attributes.fields["strand_length"].string_value
         brightness: float = config.attributes.fields["brightness"].number_value
-        address: int = int(config.attributes.fields["address"].number_value)
+        address_hex_string = config.attributes.fields["address"].string_value
+        LOG.info(f"address hex string: {address_hex_string}")
+        address = int(address_hex_string, 16)
+        LOG.info(f"converted address: {address}")
+
         
         if self.bus is not None:
             self.bus.close()
