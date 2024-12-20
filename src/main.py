@@ -1,6 +1,6 @@
 import asyncio
 from typing import ClassVar, Final, Mapping, Sequence, Optional
-
+from smbus2 import SMBus, i2c_msg
 
 from typing_extensions import Self
 from viam.components.generic import *
@@ -13,11 +13,19 @@ from viam.resource.types import Model, ModelFamily
 from viam.utils import ValueTypes
 from viam import logging
 
-import serial
 import json
 import io
 
 LOG = logging.getLogger(__name__)
+MESSAGE_CHUNK_SIZE = 32
+
+# used to divide a byte string into 32 byte chunks to send over i2c and then put back together on the read side
+def divide_chunks(l, n):
+    
+    # looping till length l
+    for i in range(0, len(l), n): 
+        yield l[i:i + n]
+
 
 class MultiLed(Generic, EasyResource):
     MODEL: ClassVar[Model] = Model(
@@ -51,6 +59,17 @@ class MultiLed(Generic, EasyResource):
         Returns:
             Sequence[str]: A list of implicit dependencies
         """
+        if "num_strands" not in config.attributes.fields:
+            raise Exception("A num_strands attribute is required for multi led component. Must be an integer. This is the number of led strips")
+
+        if "strand_length" not in config.attributes.fields:
+            raise Exception("A strand_length attribute is required for multi led component. Must be an integer. This is the number of pixels per strip.")
+        
+        if "brightness" not in config.attributes.fields:
+            raise Exception("A brightness attribute is required for multi led component component. Must be a float like 0.2 for 20% brightness")
+
+        if "address" not in config.attributes.fields:
+            raise Exception("A address attribute is required for multi led component.")
         return []
 
     def reconfigure(
@@ -65,30 +84,37 @@ class MultiLed(Generic, EasyResource):
         num_strands: int = int(config.attributes.fields["num_strands"].number_value)
         strand_length: str = config.attributes.fields["strand_length"].string_value
         brightness: float = config.attributes.fields["brightness"].number_value
-        ser = serial.Serial(port="/dev/serial0", baudrate=9600)
-        if not ser.is_open:
-            ser.open()  # check and open Serial0
-        ser.flush()  # clear the UART Input buffer
-        self.ser = ser
+        address: int = int(config.attributes.fields["address"].number_value)
+        
+        if self.bus is not None:
+            self.bus.close()
+        
+        self.bus = SMBus(1)
         pixel_config = {
             "num_strands": num_strands,
             "strand_length": strand_length,
             "brightness": brightness
         }
         
-        json_data = json.dumps(pixel_config)
+        self.num_strands = num_strands
+        self.strand_length = self.strand_length
+        self.brightness = brightness
+        self.address = address
         
-        # buffer = io.StringIO()
-        # json.dump(pixel_config, buffer)
-        # buffer.seek(0)
-        bytes = self.ser.write(json_data.encode('utf-8'))
-        LOG.info(f"wrote {bytes} bytes of data to /dev/serial0")
-        # self.ser.write(pixel_config)
+        self.send_message(pixel_config)
         
     async def do_command(
             self, command: Mapping[str, ValueTypes], *, timeout: Optional[float] = None,**kwargs,
     ) -> Mapping[str, ValueTypes]:
         LOG.info("do command tings")
+        LOG.info(f"value passed into do command: {command}")
+        
+    def send_message(self, message):
+        byte_string = json.dumps(message).encode("utf-8")
+        chunks = divide_chunks(byte_string, MESSAGE_CHUNK_SIZE)
+        for chunk in chunks:
+            self.bus.write_i2c_block_data(self.address, 0x00, chunk)
+        LOG.info("sent message over i2c")
 
 if __name__ == "__main__":
     asyncio.run(Module.run_from_registry())
