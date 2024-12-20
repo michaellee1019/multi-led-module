@@ -34,6 +34,10 @@ class MultiLed(Generic, EasyResource):
     )
     
     bus = None
+    strand_length = 0
+    num_strands = 0
+    brightness = 0
+    address = 0
 
     @classmethod
     def new(
