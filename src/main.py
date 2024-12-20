@@ -130,8 +130,8 @@ class MultiLed(Generic, EasyResource):
         timeout: Optional[float] = None,
         **kwargs,
     ) -> Mapping[str, ValueTypes]:
-        LOG.info("do command tings")
         LOG.info(f"value passed into do command: {command}")
+        self.send_message(command)
 
     def send_message(self, message):
         byte_string = json.dumps(message).encode("utf-8")
