@@ -32,7 +32,7 @@ class MultiLed(Generic, EasyResource):
     MODEL: ClassVar[Model] = Model(
         ModelFamily("vijayvuyyuru", "multi-led"), "multi-led"
     )
-    
+
     bus = None
     strand_length = 0
     num_strands = 0
@@ -97,7 +97,7 @@ class MultiLed(Generic, EasyResource):
             dependencies (Mapping[ResourceName, ResourceBase]): Any dependencies (both implicit and explicit)
         """
         num_strands: int = int(config.attributes.fields["num_strands"].number_value)
-        strand_length: str = config.attributes.fields["strand_length"].string_value
+        strand_length: int = int(config.attributes.fields["strand_length"].number_value)
         brightness: float = config.attributes.fields["brightness"].number_value
         address_hex_string = config.attributes.fields["address"].string_value
         LOG.info(f"address hex string: {address_hex_string}")
@@ -109,9 +109,11 @@ class MultiLed(Generic, EasyResource):
 
         self.bus = SMBus(1)
         pixel_config = {
-            "num_strands": num_strands,
-            "strand_length": strand_length,
-            "brightness": brightness,
+            "reconfigure": {
+                "num_strands": num_strands,
+                "strand_length": strand_length,
+                "brightness": brightness,
+            }
         }
 
         self.num_strands = num_strands
