@@ -119,6 +119,9 @@ class MultiLed(Generic, EasyResource):
         for chunk in chunks:
             self.bus.write_i2c_block_data(self.address, 0x00, chunk)
         LOG.info("sent message over i2c")
+    
+    async def close(self):
+        self.bus.close()
 
 if __name__ == "__main__":
     asyncio.run(Module.run_from_registry())
