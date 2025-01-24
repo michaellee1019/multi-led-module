@@ -57,42 +57,47 @@ class PixelStrand:
     # Animation settings
     speed: float = 0.1
     colors = [RED]
-    tail_length: int = 1
+    tail_length: int = 10
     bounce: bool = False
     size: int = 1
     spacing: int = 1
     period: int = 1
     num_sparkles: int = 1
     step: int = 1
+    animation_name = "comet"
 
     def __init__(self, strand) -> None:
         self.strand = strand
-        self.active_animation = self.active_animation = Comet(
+        self.active_animation = RainbowComet(
                 self.strand,
                 speed=self.speed,
-                color=self.colors[0],
                 tail_length=self.tail_length,
                 bounce=self.bounce,
             )
 
     def handle_command(self, params: dict) -> None:
-        should_set_anim = False
+        should_set_anim = True
         anim_name = ""
         for name, args in params.items():
             if name == "set_animation":
                 self.strand.fill((0, 0, 0))
                 self.strand.show()
-                should_set_anim = True
                 anim_name = args
             elif name == "speed":
                 self.speed = float(args)
             elif name == "color":
-                color = self.get_color(args)
-                self.colors = [color]
+                if type(args) is str:
+                    color = self.get_color(args)
+                    self.colors = [color]
+                else:
+                    self.colors = [(args[0], args[1], args[2])]
             elif name == "colors":
                 new_colors = []
                 for color in args:
-                    new_colors.append(self.get_color(color))
+                    if type(color) is str:
+                        new_colors.append(self.get_color(color))
+                    else:
+                        new_colors.append((color[0], color[1], color[2]))
                 self.colors = new_colors
             elif name == "tail_length":
                 self.tail_length = int(args)
@@ -111,6 +116,7 @@ class PixelStrand:
             elif name == "step":
                 self.step = int(args)
             elif name == "set_pixel_colors":
+                should_set_anim = False
                 # clear active animation if we're explicitly setting pixel colors and zero all pixels if switching from animation to manual mode
                 if self.active_animation is not None:
                     self.strand.fill((0, 0, 0))
@@ -199,6 +205,7 @@ class PixelStrand:
             )
         else:
             raise ValueError("invalid animation name")
+        self.animation_name = animation_name
 
     def get_color(self, color: str) -> adafruit_led_animation.color:
         color_map = {
@@ -258,9 +265,7 @@ class PixelDisplay:
             self.brightness = brightness
         if self.pixels is not None:
             self.pixels.deinit()
-            del self.pixels
-        for strand in self.strand_list:
-            del strand
+            # del self.pixels
         self.pixels = NeoPxl8(
             self.first_led_pin,
             self.strand_length * self.num_strands,
@@ -313,6 +318,10 @@ class PixelDisplay:
             range(n * pixels_count, (n + 1) * pixels_count),
             individual_pixels=True,
         )
+        
+    def __del__(self):
+        self.pixels.deinit()
+
 
 
 NUM_FETCHES = 30
