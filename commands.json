@@ -1,0 +1,141 @@
+{
+  "0": {
+    "set_animation": "rainbow_comet",
+    "tail_length": 120
+  },
+  "1": {
+    "set_animation": "pulse",
+    "speed": 0.001,
+    "period": 10,
+    "colors": ["blue", "blue", "black"],
+    "size": 15,
+    "step": 20  
+},
+  "2": {
+    "set_animation": "sparkle_pulse",
+    "speed": 0.001,
+    "period": 10,
+    "colors": ["red", "blue", "black"],
+    "size": 15,
+    "step": 20,
+    "tail_length": 120
+  }
+}
+
+{
+  "0": {
+    "sequence": {
+      "animations": [
+        {
+          "animation_name": "rainbow_comet",
+          "speed": 0.01,
+          "period": 1,
+          "color": "red"
+        }
+      ],
+      "duration": 10
+    }
+  }
+}
+
+
+{
+    "0": {
+      "set_animation": "rainbow_comet",
+      "speed": 0.001,
+      "tail_length": 120
+    },
+    "1": {
+      "set_animation": "rainbow_comet",
+      "speed": 0.001,
+      "tail_length": 120
+    },
+    "2": {
+      "set_animation": "rainbow_comet",
+      "speed": 0.001,
+      "tail_length": 120
+    }
+  }
+
+{
+    "0": {
+      "set_animation": "pulse",
+      "speed": 0.001,
+      "period": 6,
+      "colors": ["black"]
+    },
+    "1": {
+        "set_animation": "pulse",
+        "speed": 0.001,
+        "period": 6,
+        "colors": ["black"]
+      },
+    "2": {
+        "set_animation": "pulse",
+        "speed": 0.001,
+        "period": 6,
+        "colors": ["black"]
+      }
+  }
+  
+
+  {
+    "0": {
+      "set_animation": "sparkle_pulse",
+      "speed": 0.001,
+      "period": 6,
+      "colors": [[197,29,52], "blue", "black"]
+    },
+    "1": {
+      "set_animation": "pulse",
+      "speed": 0.001,
+      "period": 1,
+      "colors": ["blue", "blue", "black"]
+    },
+    "2": {
+      "set_animation": "sparkle_pulse",
+      "speed": 0.001,
+      "period": 3,
+      "colors": [[0,187,45], "blue", "black"]
+    }
+  }
+
+
+  {
+    "0": {
+      "set_animation": "rainbow",
+      "speed": 0.001,
+      "period": 6
+    },
+    "1": {
+      "set_animation": "pulse",
+      "speed": 0.001,
+      "period": 1,
+      "colors": ["blue", "blue", "black"],
+      "size": 15,
+      "step": 20,
+      "tail_length": 120
+    },
+    "2": {
+      "set_animation": "sparkle_pulse",
+      "speed": 0.001,
+      "period": 3,
+      "colors": [[0,187,45], "blue", "black"],
+      "size": 15,
+      "step": 20,
+      "tail_length": 120
+    }
+  }
+
+  {
+    "0": {
+      "set_pixel_colors": {
+        "0": [255, 255, 255],
+        "1": [255, 255, 255],
+        "2": [255, 255, 255],
+        "3": [255, 255, 255],
+        "4": [255, 255, 255],
+        "5": [255, 255, 255]
+      }
+    }
+  }

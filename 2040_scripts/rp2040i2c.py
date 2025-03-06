@@ -77,7 +77,7 @@ class PixelStrand:
 
     def handle_command(self, params: dict) -> None:
         should_set_anim = True
-        anim_name = ""
+        anim_name = self.animation_name
         for name, args in params.items():
             if name == "set_animation":
                 self.strand.fill((0, 0, 0))
@@ -123,12 +123,17 @@ class PixelStrand:
                     self.strand.show()
                 self.active_animation = None
                 self.set_pixel_colors(args)
+            # elif name == "sequence":
+                
             else:
                 raise ValueError(f"invalid arg: {name}")
         if should_set_anim:
                 self.set_animation(anim_name)
                 self.strand.show()
-
+    #TODO: refactor this to pass in all attributes as parameters
+    # something like self.active_animation = handleAnimationName()
+    # call this from handle sequence to make this easier, need to figure out
+    # classy parsing. 
     def set_animation(self, animation_name: str):
         print(f"animation name: {animation_name}")
         if animation_name == "blink":
@@ -267,7 +272,7 @@ class PixelDisplay:
             self.pixels.deinit()
             # del self.pixels
         self.pixels = NeoPxl8(
-            self.first_led_pin,
+            board.NEOPIXEL0,
             self.strand_length * self.num_strands,
             num_strands=self.num_strands,
             auto_write=False,
