@@ -141,9 +141,17 @@ class MultiLed(Generic, EasyResource):
             self.bus.write_i2c_block_data(self.address, 0x00, chunk)
         
         response = self.bus.read_i2c_block_data(self.address, 0x00, MESSAGE_CHUNK_SIZE)
-        LOG.info(f"response from i2c: {response.decode('utf-8')}")
+        response_string = self.convert_int_list_to_string(response)
         
-        return {"response": response.decode("utf-8")}
+        return {"response": response_string}
+    
+    def convert_int_list_to_string(self, int_list):
+        # Convert list of integers to bytes
+        byte_data = bytes(int_list)
+        
+        # Decode bytes to string, stopping at null terminators
+        # The 'utf-8' encoding is commonly used, but you might need another one depending on your data
+        return byte_data.decode('utf-8').rstrip('\x00')
 
     async def close(self):
         self.bus.close()
