@@ -131,7 +131,7 @@ class MultiLed(Generic, EasyResource):
         **kwargs,
     ) -> Mapping[str, ValueTypes]:
         LOG.info(f"value passed into do command: {command}")
-        self.send_message(command)
+        return self.send_message(command)
 
     def send_message(self, message):
         byte_string = json.dumps(message).encode("utf-8")
@@ -141,8 +141,9 @@ class MultiLed(Generic, EasyResource):
             self.bus.write_i2c_block_data(self.address, 0x00, chunk)
         
         response = self.bus.read_i2c_block_data(self.address, 0x00, MESSAGE_CHUNK_SIZE)
-        LOG.info(f"response from i2c: {response}")
-        return {"response": response}
+        LOG.info(f"response from i2c: {response.decode('utf-8')}")
+        
+        return {"response": response.decode("utf-8")}
 
     async def close(self):
         self.bus.close()

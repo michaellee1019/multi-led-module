@@ -379,6 +379,9 @@ with I2CTarget(board.SCL, board.SDA, (0x40,)) as device:
                     if error_text != "":
                         buffer = bytes(error_text.encode("utf-8"))
                         i2c_target_request.write(buffer)
+                    else:
+                        temp = "success"
+                        i2c_target_request.write(temp.encode("utf-8"))
                 else:
                     # transaction is a write request
                     full_msg = ""
