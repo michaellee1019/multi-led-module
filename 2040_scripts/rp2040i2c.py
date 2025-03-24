@@ -360,6 +360,8 @@ NUM_FETCHES = 30
 
 pixel_display = None
 
+error_text = ""
+
 with I2CTarget(board.SCL, board.SDA, (0x40,)) as device:
     while True:
         # check if there's a pending device request
@@ -374,8 +376,9 @@ with I2CTarget(board.SCL, board.SDA, (0x40,)) as device:
                     print(f"read request to address '0x{address:02x}'")
 
                     # for our emulated device, return a fixed value for the request
-                    buffer = bytes([0xAA])
-                    i2c_target_request.write(buffer)
+                    if error_text != "":
+                        buffer = bytes(error_text.encode("utf-8"))
+                        i2c_target_request.write(buffer)
                 else:
                     # transaction is a write request
                     full_msg = ""
@@ -419,5 +422,6 @@ with I2CTarget(board.SCL, board.SDA, (0x40,)) as device:
                                 #     )
                                 # )
                                 print(e)
+                                error_text = str(e)
         if pixel_display is not None:
             pixel_display.animate()

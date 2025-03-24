@@ -136,9 +136,13 @@ class MultiLed(Generic, EasyResource):
     def send_message(self, message):
         byte_string = json.dumps(message).encode("utf-8")
         chunks = divide_chunks(byte_string, MESSAGE_CHUNK_SIZE)
+        LOG.info("sent message over i2c")
         for chunk in chunks:
             self.bus.write_i2c_block_data(self.address, 0x00, chunk)
-        LOG.info("sent message over i2c")
+        
+        response = self.bus.read_i2c_block_data(self.address, 0x00, MESSAGE_CHUNK_SIZE)
+        LOG.info(f"response from i2c: {response}")
+        return {"response": response}
 
     async def close(self):
         self.bus.close()
