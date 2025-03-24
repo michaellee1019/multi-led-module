@@ -52,6 +52,7 @@ from adafruit_led_animation.helper import PixelMap
 from adafruit_neopxl8 import NeoPxl8
 import gc
 
+first_led_pin = board.NEOPIXEL0
 
 class PixelStrand:
     # Animation settings
@@ -272,24 +273,19 @@ class PixelDisplay:
             self.pixels.deinit()
             # del self.pixels
         self.pixels = NeoPxl8(
-            board.NEOPIXEL0,
+            first_led_pin,
             self.strand_length * self.num_strands,
             num_strands=self.num_strands,
             auto_write=False,
             brightness=self.brightness,
         )
         print("set pixels")
-        strands = [self.strand(i, self.strand_length) for i in range(self.num_strands)]
-        strands_list = []
-        for strand in strands:
-            strands_list.append(PixelStrand(strand))
-        self.strand_list = strands_list
+        self.strand_list =  [PixelStrand(self.strand(i, self.strand_length)) for i in range(self.num_strands)]
         print("set strand list")
-        print(self.strand_list)
         print(
             f"reconfigured with {self.num_strands} strands, {self.strand_length} pixels per strand, and brigthness of {self.brightness}"
         )
-        gc.collect()
+        self.regenerate_animation_group()
 
     def animate(self):
         if self.animations == None:
@@ -324,8 +320,8 @@ class PixelDisplay:
             individual_pixels=True,
         )
         
-    def __del__(self):
-        self.pixels.deinit()
+    # def __del__(self):
+    #     self.pixels.deinit()
 
 
 
