@@ -1,13 +1,3 @@
-# SPDX-FileCopyrightText: 2017 Limor Fried for Adafruit Industries
-#
-# SPDX-License-Identifier: MIT
-
-"""CircuitPython I2C Device Address Scan"""
-# If you run this and it seems to hang, try manually unlocking
-# your I2C bus from the REPL with
-#  >>> import board
-#  >>> board.I2C().unlock()
-
 import time
 import board
 from i2ctarget import I2CTarget
@@ -47,10 +37,10 @@ from adafruit_led_animation.animation.rainbowcomet import RainbowComet
 from adafruit_led_animation.animation.rainbowchase import RainbowChase
 from adafruit_led_animation.animation.rainbowsparkle import RainbowSparkle
 from adafruit_led_animation.animation.customcolorchase import CustomColorChase
+from adafruit_led_animation.sequence import AnimationSequence
 
 from adafruit_led_animation.helper import PixelMap
 from adafruit_neopxl8 import NeoPxl8
-import gc
 
 first_led_pin = board.NEOPIXEL0
 
@@ -93,13 +83,7 @@ class PixelStrand:
                 else:
                     self.colors = [(args[0], args[1], args[2])]
             elif name == "colors":
-                new_colors = []
-                for color in args:
-                    if type(color) is str:
-                        new_colors.append(self.get_color(color))
-                    else:
-                        new_colors.append((color[0], color[1], color[2]))
-                self.colors = new_colors
+                self.colors = self.parse_colors(args)
             elif name == "tail_length":
                 self.tail_length = int(args)
             elif name == "bounce":
@@ -110,8 +94,6 @@ class PixelStrand:
                 self.spacing = int(args)
             elif name == "period":
                 self.period = int(args)
-            elif name == "speed":
-                self.speed = int(args)
             elif name == "num_sparkles":
                 self.num_sparkles = int(args)
             elif name == "step":
@@ -123,95 +105,111 @@ class PixelStrand:
                     self.strand.fill((0, 0, 0))
                     self.strand.show()
                 self.active_animation = None
+                self.animation_name = ""
                 self.set_pixel_colors(args)
-            # elif name == "sequence":
+            elif name == "sequence":
+                should_set_anim = False
+                self.handle_sequence(args)
                 
             else:
                 raise ValueError(f"invalid arg: {name}")
         if should_set_anim:
-                self.set_animation(anim_name)
-                self.strand.show()
+            self.set_animation(anim_name)
+        self.strand.show()
     #TODO: refactor this to pass in all attributes as parameters
     # something like self.active_animation = handleAnimationName()
     # call this from handle sequence to make this easier, need to figure out
     # classy parsing. 
     def set_animation(self, animation_name: str):
         print(f"animation name: {animation_name}")
+        self.active_animation = self.handle_animation_name(
+            animation_name,
+            self.strand,
+            self.speed,
+            self.colors,
+            self.tail_length,
+            self.bounce,
+            self.size,
+            self.spacing,
+            self.period,
+            self.num_sparkles,
+            self.step
+        )
+        self.animation_name = animation_name
+
+    @classmethod
+    def handle_animation_name(cls, animation_name, strand, speed, colors, tail_length, 
+                            bounce, size, spacing, period, num_sparkles, step):
         if animation_name == "blink":
-            self.active_animation = Blink(
-                self.strand, speed=self.speed, color=self.colors[0]
-            )
+            return Blink(strand, speed=speed, color=colors[0])
         elif animation_name == "colorcycle":
-            self.active_animation = ColorCycle(
-                self.strand, speed=self.speed, colors=self.colors
-            )
+            return ColorCycle(strand, speed=speed, colors=colors)
         elif animation_name == "comet":
-            self.active_animation = Comet(
-                self.strand,
-                speed=self.speed,
-                color=self.colors[0],
-                tail_length=self.tail_length,
-                bounce=self.bounce,
+            return Comet(
+                strand,
+                speed=speed,
+                color=colors[0],
+                tail_length=tail_length,
+                bounce=bounce,
             )
         elif animation_name == "chase":
-            self.active_animation = Chase(
-                self.strand,
-                speed=self.speed,
-                size=self.size,
-                spacing=self.spacing,
-                color=self.colors[0],
+            return Chase(
+                strand,
+                speed=speed,
+                size=size,
+                spacing=spacing,
+                color=colors[0],
             )
         elif animation_name == "pulse":
-            self.active_animation = Pulse(
-                self.strand, speed=self.speed, period=self.period, color=self.colors[0]
+            return Pulse(
+                strand, speed=speed, period=period, color=colors[0]
             )
         elif animation_name == "sparkle":
-            self.active_animation = Sparkle(
-                self.strand,
-                speed=self.speed,
-                color=self.colors[0],
-                num_sparkles=self.num_sparkles,
+            return Sparkle(
+                strand,
+                speed=speed,
+                color=colors[0],
+                num_sparkles=num_sparkles,
             )
         elif animation_name == "solid":
-            self.active_animation = Solid(self.strand, color=self.colors[0])
+            return Solid(strand, color=colors[0])
         elif animation_name == "rainbow":
-            self.active_animation = Rainbow(
-                self.strand, speed=self.speed, period=self.period
+            return Rainbow(
+                strand, speed=speed, period=period
             )
         elif animation_name == "sparkle_pulse":
-            self.active_animation = SparklePulse(
-                self.strand, speed=self.speed, period=self.period, color=self.colors[0]
+            return SparklePulse(
+                strand, speed=speed, period=period, color=colors[0]
             )
         elif animation_name == "rainbow_comet":
-            self.active_animation = RainbowComet(
-                self.strand,
-                speed=self.speed,
-                tail_length=self.tail_length,
-                bounce=self.bounce,
+            return RainbowComet(
+                strand,
+                speed=speed,
+                tail_length=tail_length,
+                bounce=bounce,
             )
         elif animation_name == "rainbow_chase":
-            self.active_animation = RainbowChase(
-                self.strand,
-                speed=self.speed,
-                size=self.size,
-                spacing=self.spacing,
-                step=self.step,
+            return RainbowChase(
+                strand,
+                speed=speed,
+                size=size,
+                spacing=spacing,
+                step=step,
             )
         elif animation_name == "rainbow_sparkle":
-            self.active_animation = RainbowSparkle(
-                self.strand, speed=self.speed, num_sparkles=self.num_sparkles
+            return RainbowSparkle(
+                strand, speed=speed, num_sparkles=num_sparkles
             )
         elif animation_name == "custom_color_chase":
-            self.active_animation = CustomColorChase(
-                self.strand,
-                speed=self.speed,
-                size=self.size,
-                spacing=self.spacing,
-                colors=self.colors,
+            return CustomColorChase(
+                strand,
+                speed=speed,
+                size=size,
+                spacing=spacing,
+                colors=colors,
             )
         else:
             raise ValueError("invalid animation name")
-        self.animation_name = animation_name
 
     def get_color(self, color: str) -> adafruit_led_animation.color:
         color_map = {
@@ -237,6 +235,15 @@ class PixelStrand:
             raise ValueError(f"invalid color name {color}")
         return strip_color
 
+    def parse_colors(self, color_args):
+        new_colors = []
+        for color in color_args:
+            if type(color) is str:
+                new_colors.append(self.get_color(color))
+            else:
+                new_colors.append((color[0], color[1], color[2]))
+        return new_colors
+
     def set_pixel_colors(self, pixel_colors: dict):
         for pixel, color in pixel_colors.items():
             # convert from floats to ints
@@ -245,6 +252,33 @@ class PixelStrand:
 
     def get_active_animation(self) -> Animation:
         return self.active_animation
+
+    def handle_sequence(self, sequence: dict):
+        print("handling sequence")
+        animations = []
+        for animation in sequence.get("animations", []):
+            animation_name = animation["animation_name"]
+            speed = float(animation.get("speed", self.speed))
+            tail_length = int(animation.get("tail_length", self.tail_length))
+            bounce = int(animation.get("bounce", self.bounce))
+            size = int(animation.get("size", self.size))
+            spacing = int(animation.get("spacing", self.spacing))
+            period = int(animation.get("period", self.period))
+            num_sparkles = int(animation.get("num_sparkles", self.num_sparkles))
+            step = int(animation.get("step", self.step))
+            
+            colors = animation.get("colors", [])
+            if len(colors) == 0:
+                colors = self.colors
+            else:
+                colors = self.parse_colors(colors)
+            animations.append(self.handle_animation_name(animation_name, self.strand, speed, colors, tail_length, bounce, size, spacing, period, num_sparkles, step))
+            
+        sequence = AnimationSequence(*animations, advance_interval=int(sequence.get("duration", 0)), auto_clear=True)
+        self.active_animation = sequence
+        self.animation_name = "sequence"
+            
+
 
 
 class PixelDisplay:
@@ -319,9 +353,6 @@ class PixelDisplay:
             range(n * pixels_count, (n + 1) * pixels_count),
             individual_pixels=True,
         )
-        
-    # def __del__(self):
-    #     self.pixels.deinit()
 
 
 

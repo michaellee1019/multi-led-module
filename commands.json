@@ -25,12 +25,17 @@
 {
   "0": {
     "sequence": {
-      "animations": [
+      "animations":[
         {
           "animation_name": "rainbow_comet",
           "speed": 0.01,
-          "period": 1,
-          "color": "red"
+          "tail_length": 120
+        },
+        {
+          "animation_name": "pulse",
+          "speed": 0.001,
+          "period": 10,
+          "colors": ["blue", "blue", "black"] 
         }
       ],
       "duration": 10
