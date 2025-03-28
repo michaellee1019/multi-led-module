@@ -375,13 +375,12 @@ with I2CTarget(board.SCL, board.SDA, (0x40,)) as device:
                 if i2c_target_request.is_read:
                     print(f"read request to address '0x{address:02x}'")
 
-                    # for our emulated device, return a fixed value for the request
-                    if error_text != "":
-                        buffer = bytes(error_text.encode("utf-8"))
-                        i2c_target_request.write(buffer)
-                    else:
-                        temp = "success"
-                        i2c_target_request.write(temp.encode("utf-8"))
+                    # if error_text != "":
+                    #     buffer = bytes(error_text.encode("utf-8"))
+                    #     i2c_target_request.write(buffer)
+                    # else:
+                    #     temp = "success"
+                    #     i2c_target_request.write(temp.encode("utf-8"))
                 else:
                     # transaction is a write request
                     full_msg = ""

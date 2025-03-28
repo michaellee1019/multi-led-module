@@ -140,10 +140,10 @@ class MultiLed(Generic, EasyResource):
         for chunk in chunks:
             self.bus.write_i2c_block_data(self.address, 0x00, chunk)
         
-        response = self.bus.read_i2c_block_data(self.address, 0x00, MESSAGE_CHUNK_SIZE)
-        response_string = self.convert_int_list_to_string(response)
+        # response = self.bus.read_i2c_block_data(self.address, 0x00, MESSAGE_CHUNK_SIZE)
+        # response_string = self.convert_int_list_to_string(response)
         
-        return {"response": response_string}
+        # return {"response": response_string}
     
     def convert_int_list_to_string(self, int_list):
         # Convert list of integers to bytes
