@@ -110,7 +110,7 @@ class PixelStrand:
             elif name == "sequence":
                 should_set_anim = False
                 self.handle_sequence(args)
-                
+
             else:
                 raise ValueError(f"invalid arg: {name}")
         if should_set_anim:
@@ -119,7 +119,7 @@ class PixelStrand:
     #TODO: refactor this to pass in all attributes as parameters
     # something like self.active_animation = handleAnimationName()
     # call this from handle sequence to make this easier, need to figure out
-    # classy parsing. 
+    # classy parsing.
     def set_animation(self, animation_name: str):
         print(f"animation name: {animation_name}")
         self.active_animation = self.handle_animation_name(
@@ -138,7 +138,7 @@ class PixelStrand:
         self.animation_name = animation_name
 
     @classmethod
-    def handle_animation_name(cls, animation_name, strand, speed, colors, tail_length, 
+    def handle_animation_name(cls, animation_name, strand, speed, colors, tail_length,
                             bounce, size, spacing, period, num_sparkles, step):
         if animation_name == "blink":
             return Blink(strand, speed=speed, color=colors[0])
@@ -266,18 +266,18 @@ class PixelStrand:
             period = int(animation.get("period", self.period))
             num_sparkles = int(animation.get("num_sparkles", self.num_sparkles))
             step = int(animation.get("step", self.step))
-            
+
             colors = animation.get("colors", [])
             if len(colors) == 0:
                 colors = self.colors
             else:
                 colors = self.parse_colors(colors)
             animations.append(self.handle_animation_name(animation_name, self.strand, speed, colors, tail_length, bounce, size, spacing, period, num_sparkles, step))
-            
-        sequence = AnimationSequence(*animations, advance_interval=int(sequence.get("duration", 0)), auto_clear=True)
+
+        sequence = AnimationSequence(*animations, advance_interval=float(sequence.get("duration", 0)), auto_clear=True)
         self.active_animation = sequence
         self.animation_name = "sequence"
-            
+
 
 
 
@@ -356,7 +356,7 @@ class PixelDisplay:
 
 
 
-NUM_FETCHES = 30
+NUM_FETCHES = 100
 
 pixel_display = None
 
