@@ -257,7 +257,7 @@ class PixelStrand:
         print("handling sequence")
         animations = []
         for animation in sequence.get("animations", []):
-            animation_name = animation["animation_name"]
+            animation_name = animation["set_animation"]
             speed = float(animation.get("speed", self.speed))
             tail_length = int(animation.get("tail_length", self.tail_length))
             bounce = int(animation.get("bounce", self.bounce))
