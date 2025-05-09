@@ -12,6 +12,7 @@ from viam.resource.easy_resource import EasyResource
 from viam.resource.types import Model, ModelFamily
 from viam.utils import ValueTypes
 from viam import logging
+from google.protobuf import json_format
 
 import json
 import io
@@ -99,7 +100,7 @@ class MultiLed(Generic, EasyResource):
             config (ComponentConfig): The new configuration
             dependencies (Mapping[ResourceName, ResourceBase]): Any dependencies (both implicit and explicit)
         """
-        strands: Mapping[str, ValueTypes] = config.attributes.fields["strands"]
+        strands: dict = json.loads(json_format.MessageToJson(config.attributes.fields["strands"]))
         brightness: float = config.attributes.fields["brightness"].number_value
         address_hex_string = config.attributes.fields["address"].string_value
         LOG.info(f"address hex string: {address_hex_string}")
