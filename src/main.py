@@ -117,6 +117,8 @@ class MultiLed(Generic, EasyResource):
                 "brightness": brightness,
             }
         }
+        
+        LOG.info(f"pixel config: {pixel_config}")
 
         self.strands = strands
         self.brightness = brightness
