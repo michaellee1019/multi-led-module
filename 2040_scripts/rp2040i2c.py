@@ -293,22 +293,19 @@ class PixelDisplay:
 
     animations: AnimationGroup = None
 
-    def __init__(self, strands, brightness) -> None:
-        self.reconfigure(strands, brightness)
+    def __init__(self, num_strands, strand_length, brightness) -> None:
+        self.reconfigure(num_strands, strand_length, brightness)
 
-    def reconfigure(self, strands:dict, brightness) -> None:
-        longest_strand = 0
-        for key in strands:
-            print(f"key: {key}, value: {strands[key]}")
-            self.num_strands = len(strands)
-            if strands[key] > longest_strand:
-                longest_strand = strands[key]
-        self.strand_length = int(longest_strand)
-        print("parsed strands")
+    def reconfigure(self, num_strands, strand_length, brightness) -> None:
+        if num_strands != 0:
+            self.num_strands = num_strands
+        if strand_length != 0:
+            self.strand_length = strand_length
         if brightness != 0.0:
             self.brightness = brightness
         if self.pixels is not None:
             self.pixels.deinit()
+            # del self.pixels
         self.pixels = NeoPxl8(
             first_led_pin,
             self.strand_length * self.num_strands,
@@ -317,22 +314,10 @@ class PixelDisplay:
             brightness=self.brightness,
         )
         print("set pixels")
-        strand_list = []
-        # Sort the strands by their key (strand number)
-        sorted_strands = sorted(strands.items(), key=lambda x: int(x[0]))
-        for strand_num, length in sorted_strands:
-            # Create a PixelMap for each strand with its specific length
-            strand_map = PixelMap(
-                self.pixels,
-                range(int(strand_num) * int(length), int(strand_num) * int(length) + int(length)),
-                individual_pixels=True,
-            )
-            strand_list.append(PixelStrand(strand_map))
-        
-        self.strand_list = strand_list
+        self.strand_list =  [PixelStrand(self.strand(i, self.strand_length)) for i in range(self.num_strands)]
         print("set strand list")
         print(
-            f"reconfigured with {self.num_strands} strands and brigthness of {self.brightness}"
+            f"reconfigured with {self.num_strands} strands, {self.strand_length} pixels per strand, and brigthness of {self.brightness}"
         )
         self.regenerate_animation_group()
 
@@ -362,7 +347,16 @@ class PixelDisplay:
         else:
             self.has_active_animations = False
 
-NUM_FETCHES = 75
+    def strand(self, n, pixels_count):
+        return PixelMap(
+            self.pixels,
+            range(n * pixels_count, (n + 1) * pixels_count),
+            individual_pixels=True,
+        )
+
+
+
+NUM_FETCHES = 100
 
 pixel_display = None
 
@@ -389,36 +383,47 @@ with I2CTarget(board.SCL, board.SDA, (0x40,)) as device:
                     #     i2c_target_request.write(temp.encode("utf-8"))
                 else:
                     # transaction is a write request
+                    full_msg = ""
+                    for i in range(NUM_FETCHES):
+                        time.sleep(0.01)
+                        data = i2c_target_request.read(32)
+                        # print(f"received data: {data}")
+                        if len(data) > 0:
+                            full_msg = full_msg + data.decode()
+                    cleaned_msg = full_msg.replace("\x00", "")
+                    command = {}
                     try:
-                        full_msg = ""
-                        for i in range(NUM_FETCHES):
-                            time.sleep(0.001)
-                            data = i2c_target_request.read(32)
-                            # print(f"received data: {data}")
-                            if len(data) > 0:
-                                full_msg = full_msg + data.decode()
-                        cleaned_msg = full_msg.replace("\x00", "")
-                        command = {}
                         command = json.loads(cleaned_msg)
-                        print(command)
-                        if "reconfigure" in command:
-                            sub_command = command["reconfigure"]
-                            if pixel_display is not None:
-                                pixel_display.reconfigure(
-                                    sub_command["strands"],
-                                    sub_command["brightness"],
-                                )
-                            else:
-                                pixel_display = PixelDisplay(
-                                    sub_command["strands"],
-                                    sub_command["brightness"],
-                                )
+                    except:
+                        print("invalid json received")
+                        print(cleaned_msg)
+                        continue
+                    print(command)
+                    if "reconfigure" in command:
+                        sub_command = command["reconfigure"]
+                        if pixel_display is not None:
+                            pixel_display.reconfigure(
+                                sub_command["num_strands"],
+                                sub_command["strand_length"],
+                                sub_command["brightness"],
+                            )
                         else:
-                            for key in command:
+                            pixel_display = PixelDisplay(
+                                sub_command["num_strands"],
+                                sub_command["strand_length"],
+                                sub_command["brightness"],
+                            )
+                    else:
+                        for key in command:
+                            try:
                                 pixel_display.set_animation(int(key), command[key])
-                    except Exception as e:
-                        print(e)
-                        error_text = str(e)
-
+                            except Exception as e:
+                                # device.write(
+                                #     json.dumps(f"error setting animation, {e}").encode(
+                                #         "utf-8"
+                                #     )
+                                # )
+                                print(e)
+                                error_text = str(e)
         if pixel_display is not None:
             pixel_display.animate()
