@@ -34,7 +34,8 @@ class MultiLed(Generic, EasyResource):
     )
 
     bus = None
-    strands = {}
+    strand_length = 0
+    num_strands = 0
     brightness = 0
     address = 0
 
@@ -65,18 +66,14 @@ class MultiLed(Generic, EasyResource):
         Returns:
             Sequence[str]: A list of implicit dependencies
         """
-        # if "num_strands" not in config.attributes.fields:
-        #     raise Exception(
-        #         "A num_strands attribute is required for multi led component. Must be an integer. This is the number of led strips"
-        #     )
-
-        # if "strand_length" not in config.attributes.fields:
-        #     raise Exception(
-        #         "A strand_length attribute is required for multi led component. Must be an integer. This is the number of pixels per strip."
-        #     )
-        if "strands" not in config.attributes.fields:
+        if "num_strands" not in config.attributes.fields:
             raise Exception(
-                "A strands attribute is required for multi led component. Must be a dictionary of strand number to number of pixels."
+                "A num_strands attribute is required for multi led component. Must be an integer. This is the number of led strips"
+            )
+
+        if "strand_length" not in config.attributes.fields:
+            raise Exception(
+                "A strand_length attribute is required for multi led component. Must be an integer. This is the number of pixels per strip."
             )
 
         if "brightness" not in config.attributes.fields:
@@ -99,7 +96,8 @@ class MultiLed(Generic, EasyResource):
             config (ComponentConfig): The new configuration
             dependencies (Mapping[ResourceName, ResourceBase]): Any dependencies (both implicit and explicit)
         """
-        strands: dict = config.attributes.fields["strands"]
+        num_strands: int = int(config.attributes.fields["num_strands"].number_value)
+        strand_length: int = int(config.attributes.fields["strand_length"].number_value)
         brightness: float = config.attributes.fields["brightness"].number_value
         address_hex_string = config.attributes.fields["address"].string_value
         LOG.info(f"address hex string: {address_hex_string}")
@@ -112,12 +110,14 @@ class MultiLed(Generic, EasyResource):
         self.bus = SMBus(1)
         pixel_config = {
             "reconfigure": {
-                "strands": strands,
+                "num_strands": num_strands,
+                "strand_length": strand_length,
                 "brightness": brightness,
             }
         }
 
-        self.strands = strands
+        self.num_strands = num_strands
+        self.strand_length = self.strand_length
         self.brightness = brightness
         self.address = address
 
@@ -139,7 +139,11 @@ class MultiLed(Generic, EasyResource):
         LOG.info("sent message over i2c")
         for chunk in chunks:
             self.bus.write_i2c_block_data(self.address, 0x00, chunk)
-
+        
+        # response = self.bus.read_i2c_block_data(self.address, 0x00, MESSAGE_CHUNK_SIZE)
+        # response_string = self.convert_int_list_to_string(response)
+        
+        # return {"response": response_string}
     
     def convert_int_list_to_string(self, int_list):
         # Convert list of integers to bytes
