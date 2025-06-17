@@ -99,7 +99,7 @@ class MultiLed(Generic, EasyResource):
             config (ComponentConfig): The new configuration
             dependencies (Mapping[ResourceName, ResourceBase]): Any dependencies (both implicit and explicit)
         """
-        strands: Mapping[str, ValueTypes] = config.attributes.fields["strands"]
+        strands: dict = config.attributes.fields["strands"]
         brightness: float = config.attributes.fields["brightness"].number_value
         address_hex_string = config.attributes.fields["address"].string_value
         LOG.info(f"address hex string: {address_hex_string}")
